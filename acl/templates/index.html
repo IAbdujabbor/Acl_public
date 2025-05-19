@@ -1,0 +1,856 @@
+{% load custom_filters %}
+{% load humanize %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solarazma Modelling Utility</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #eef2f5;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar {
+            width: 300px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #343a40;
+            padding: 20px;
+            overflow-y: auto;
+            color: white;
+        }
+        .content {
+            margin-left: 320px;
+            padding: 20px;
+        }
+        .form-control {
+            border-radius: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #003f7f);
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .table-container {
+            max-width: 1000px;
+            margin: 50px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+        }
+        .form-control {
+            border-radius: 25px;
+            padding: 12px;
+            border: 1px solid #ccc;
+        }
+        table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        table tbody tr {
+            transition: all 0.3s ease-in-out;
+        }
+        table tbody tr:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.02);
+        }
+        th {
+            cursor: pointer;
+            font-weight: 600;
+        }
+        table tbody tr {
+            margin-bottom: 10px; /* Add spacing between rows */
+        }
+        table tbody tr td {
+            padding: 10px; /* Add padding inside table cells */
+        }
+        table {
+            width: 100%; /* Ensure the table takes up the full width */
+            border-collapse: collapse; /* Remove spacing between cells */
+        }
+        table th, table td {
+            padding: 10px; /* Consistent padding for all cells */
+            text-align: center; /* Center-align text */
+            vertical-align: middle; /* Vertically align text */
+        }
+        table tbody tr td {
+            margin: 0; /* Remove any margin from table cells */
+        }
+        table th, table td {
+            width: auto; /* Let the browser automatically adjust widths */
+            max-width: 150px; /* Optional: Set a maximum width */
+            word-wrap: break-word; /* Break long words to fit within the cell */
+        }
+        table {
+            table-layout: fixed; /* Force equal column widths */
+        }
+        table th, table td {
+            width: 1%; /* Distribute columns evenly */
+        }
+        table th, table td {
+            white-space: nowrap; /* Prevent text from wrapping */
+            overflow: hidden; /* Hide overflowing text */
+            text-overflow: ellipsis; /* Add ellipsis (...) for overflowing text */
+        }
+        table th:nth-child(2), table td:nth-child(2) {
+            min-width: 150px; /* Increase the width of the second column */
+        }
+    </style>
+    <style>
+        /* For WebKit-based browsers (Chrome, Edge, Safari) */
+        .table-responsive::-webkit-scrollbar {
+            width: 10px; /* Set the width of the vertical scroll bar */
+            height: 10px; /* Set the height of the horizontal scroll bar */
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background-color: #888; /* Scroll bar thumb color */
+            border-radius: 10px; /* Rounded corners for the scroll bar thumb */
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background-color: #555; /* Darker color on hover */
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background-color: #f1f1f1; /* Scroll bar track color */
+        }
+
+        /* For Firefox */
+        .table-responsive {
+            scrollbar-width: thin; /* Set the scroll bar width to thin */
+            scrollbar-color: #888 #f1f1f1; /* Thumb color and track color */
+        }
+    </style>
+    <style>
+        table th, table td {
+            white-space: normal; /* Allow text to wrap */
+            overflow: visible; /* Ensure content is not hidden */
+            text-overflow: clip; /* Disable ellipsis (...) */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3 class="text-center">Input Parameters</h3>
+        
+        <!-- Home Consuption -->
+      <form method="POST">
+    {% csrf_token %}
+    {% load custom_filters %}
+
+          <!-- Home Consumption Option Section -->
+<div class="form-group">
+    <label><i class="fas fa-charging-station"></i> Home Consumption Option</label>
+    <select class="form-control" id="consumption_option" name="consumption_option" required>
+        <option value="Daily" {% if consumption_option == "Daily" %}selected{% endif %}>Daily</option>
+        <option value="Yearly" {% if consumption_option == "Yearly" %}selected{% endif %}>Yearly</option>
+    </select>
+</div>
+
+    <!-- Home Consumption -->
+    <div class="form-group">
+        <label for="home_consuption"><i class="fas fa-tachometer-alt"></i> Home Consumption:</label>
+        <input type="number" name="home_consuption" class="form-control" id="home_consuption" required 
+               value="{{ home_consumption_value }}">
+    </div>
+
+    <!-- Solar Array Size -->
+    <div class="form-group">
+        <label for="solarArraySize"><i class="fas fa-solar-panel"></i> Solar Array Size (kWp)</label>
+        <input type="number" name="solarArraySize" class="form-control" id="solarArraySize" required 
+               value="{{ solar_array_size_value }}">
+    </div>
+
+    <!-- Select Month -->
+    <div class="form-group">
+        <label><i class="fas fa-charging-station"></i> Months</label>
+        <select class="form-control" id="batteryType" name="month" required>
+            {% for month in unique_months %}
+                <option value="{{ month }}" {% if month == month_value %}selected{% endif %}>{{ month }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Usage Profile -->
+    <div class="form-group">
+        <label><i class="fas fa-charging-station"></i> Usage Profile</label>
+        <select class="form-control" id="usage_profile" name="usage_profile" required>
+            <option value="Flat" {% if usage_profile_value == "Flat" %}selected{% endif %}>Flat</option>
+            <option value="Mainly Morning and Evening" {% if usage_profile_value == "Mainly Morning and Evening" %}selected{% endif %}>Mainly Morning and Evening</option>
+            <option value="Morning, Afternoon, and Evening" {% if usage_profile_value == "Morning, Afternoon, and Evening" %}selected{% endif %}>Morning, Afternoon, and Evening</option>
+            <option value="Mainly Evening" {% if usage_profile_value == "Mainly Evening" %}selected{% endif %}>Mainly Evening</option>
+            <option value="Standart" {% if usage_profile_value == "Standart" %}selected{% endif %}>More Often Morning, Afternoon, and Evening</option>
+        </select>
+    </div>
+
+    <!-- Battery Size -->
+    <div class="form-group">
+        <label for="batteryarraysize"><i class="fas fa-battery-half"></i> Battery Array Size (kWp)</label>
+        <input type="number" name="battery_capacity" class="form-control" id="batteryarraysize" placeholder="Enter size" min="0" step="0.1" required 
+               value="{{ battery_capacity_value }}">
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary w-100">Calculate</button>
+    </div>
+</form>
+
+
+        
+        <!-- Solar and Inverters -->
+        <form>
+
+
+                <!-- Select Month
+    <div class="form-group">
+        <label><i class="fas fa-charging-station"></i> Cover</label>
+        <select class="form-control" id="batteryType" name="month" required>
+         
+                <option >50%</option>
+                
+                <option >100%</option>
+                <option >120% </option>
+                <option >200% </option>
+           
+        </select>
+    </div>
+
+ -->
+         
+
+
+            <!-- Solar Array Performance -->
+
+
+  
+
+
+
+            <!-- Battery Section -->
+        
+
+
+            
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="container mt-4 text-center">
+            <h1 class="mb-4">ACL</h1>
+            <small >powered by res-hub</small>
+            
+        </div>
+
+        <!-- Centered Cards Section -->
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <!-- Import Cost -->
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-coins"></i> Import Cost Per Day</h5>
+                        {% if total_import_price_per_day %}
+    </p>  <p class="card-text fw-bold"> {{ total_import_price_per_day|floatformat:2 }} UZS</p>
+{% endif %}
+                      
+
+                    </div>
+                </div>
+
+                <!-- Export Revenue -->
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-hand-holding-usd"></i> Export Revenue</h5>
+                     
+
+                        <p class="card-text fw-bold">{{ final_total_sold_energy_price|floatformat:3 }} UZS</p>
+                    </div>
+                </div>
+
+                <!-- Battery Level 
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-battery-three-quarters"></i> Battery Level</h5>
+                        <p class="card-text fw-bold">{{ battery_percentage }}%</p>
+                    </div>
+                </div>
+-->
+                <!-- Loss 
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Loss</h5>
+                        <p class="card-text fw-bold">£2.30</p>
+                    </div>
+                </div>-->
+
+                  <!-- Energy generation 
+
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Energy genearation per day</h5>
+
+                        {% if daily_pv_generation_data_sum %}
+                        <p class="card-text fw-bold">{{daily_pv_generation_data_sum|floatformat:2  }}kw</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+               
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Energy genearation  Month   </h5>
+
+                        {% if monthly_pv_generation_data_sum %}
+                        <p class="card-text fw-bold">{{ monthly_pv_generation_data_sum|floatformat:2 }} kW</p>
+                        {% endif %}
+                    </div>
+
+                    
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Energy Generation (Year)</h5>
+
+                        {% if yearly_pv_generation_data_sum %}
+                        <p class="card-text fw-bold">{{ yearly_pv_generation_data_sum|floatformat:2 }} kWh</p>
+                        {% else %}
+                        <p class="card-text fw-bold">No data available</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+               -->
+               
+                <!-- Export Price Month -->
+<hr>
+
+<div class="col-md-3 col-sm-6 mb-3">
+    <div class="card text-center shadow-sm p-3">
+        <h5 class="card-title"><i class="fas fa-chart-line"></i> Export Price Month</h5>
+
+            {% for m in monthly_imports %}
+{% if m.month == month_value %}
+<p class="card-text fw-bold">{{ m.monthly_export_price|floatformat:0|intcomma }} UZS</p>
+{% endif %}
+{% endfor %}
+    </div>
+</div>  
+
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Import Price Month</h5>
+
+                            {% for m in monthly_imports %}
+    {% if m.month == month_value %}
+        <p class="card-text fw-bold">{{ m.import_price|floatformat:2|intcomma }} UZS</p>
+    {% endif %}
+{% endfor %}
+                    </div>
+                </div>
+<hr>
+
+            <!-- Import Price Year Card -->
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Export Price (Year)</h5>
+
+                        {% if sum_monthly_total_export_price %}
+                        <p class="card-text fw-bold">{{sum_monthly_total_export_price|floatformat:0|intcomma}} UZS</p>
+                        {% else %}
+                        <p class="card-text fw-bold">0.00 UZS</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm p-3">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Import Price (Year)</h5>
+
+                        {% if sum_monthly_imports_total_price %}
+                        <p class="card-text fw-bold"> {{ sum_monthly_imports_total_price|floatformat:0|intcomma }}  UZS  </p>
+                        {% else %}
+                        <p class="card-text fw-bold">0.00 UZS</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
+
+            <!--Export cards
+
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card text-center shadow-sm p-3">
+                    <h5 class="card-title"><i class="fas fa-chart-line"></i> Export  Price  (Year)</h5>
+
+                    
+                    <p class="card-text fw-bold">{{  yearly_export_price|floatformat:0|intcomma  }} UZS </p>
+                    
+                </div>
+            </div>
+
+
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card text-center shadow-sm p-3">
+                    <h5 class="card-title"><i class="fas fa-chart-line"></i> Export  Kwh  (Year)</h5>
+
+                    
+                    <p class="card-text fw-bold">{{  year_total_export_kwh|floatformat:2 }} kwh </p>
+                    
+                </div>
+            </div>
+
+            </div>
+        </div>
+-->
+        
+        <div class="chart-container mt-4">
+
+                      <!-- Floating Bar Chart -->
+                      <canvas id="floatingBarChart" style="width:100%; height: 100px;"></canvas>
+            
+                      <!-- Line Chart -->
+                      <canvas id="lineChart" style="width:100%; height: 500px;"></canvas>
+                      
+                      <!-- Area Chart -->
+                      <canvas id="areaChart" style="width:100%; height: 500px;"></canvas>
+                      
+
+                      
+
+                      <script>
+                          window.onload = function() {
+
+
+
+
+                            
+                              // Floating Bar Chart Script
+                              const ctxBar = document.getElementById('floatingBarChart').getContext('2d');
+                  
+                              const dataBar = {
+                                  labels: [{{ electricity_import_cost }}], 
+                                  datasets: [{
+                                      label: 'Import Cost',
+                                      data: [{{ electricity_import_cost }}],
+                                      backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)'],
+                                      borderWidth: 1
+                                  }]
+                              };
+                  
+                              const configBar = {
+                                  type: 'bar',
+                                  data: dataBar,
+                                  options: {
+                                      responsive: true,
+                                      indexAxis: 'y',
+                                      scales: {
+                                          x: {
+                                              beginAtZero: true
+                                          }
+                                      }
+                                  }
+                              };
+                  
+                              new Chart(ctxBar, configBar);
+                  
+                              // Line Chart Script
+                              const ctxLine = document.getElementById('lineChart').getContext('2d');
+
+// Build the labels array from time values in table_info
+const labelsLine = [{% for i in table_info %}"{{ i.time }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+// Build the dataset for energy generation per hour (numbers, no quotes)
+const generationData = [{% for i in table_info %}{{ i.electricity|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+// Build the dataset for home consumption (numbers, no quotes)
+const consumptionData = [{% for i in table_info %}{{ i.home_consumption|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+const dataLine = {
+    labels: labelsLine,
+    datasets: [
+        {
+            label: 'Energy generation per hour',
+            data: generationData,
+            fill: false,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.3
+        },
+        {
+            label: 'Home Consumption',
+            data: consumptionData,
+            fill: false,
+            borderColor: 'rgb(255, 99, 132)',
+            tension: 0.3
+        }
+    ]
+};
+
+const configLine = {
+    type: 'line',
+    data: dataLine,
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+};
+
+new Chart(ctxLine, configLine);
+
+// Area Chart Script
+const ctxArea = document.getElementById('areaChart').getContext('2d');
+const dataArea = {
+    labels: labelsLine,
+    datasets: [{
+        label: 'Energy Consumption per hour',
+        data: consumptionData,
+        fill: true,
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgb(54, 162, 235)',
+        tension: 0.3
+    }]
+};
+
+const configArea = {
+    type: 'line',
+    data: dataArea,
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+};
+
+new Chart(ctxArea, configArea);
+                  
+                              new Chart(ctxArea, configArea);
+                          
+                          
+                          
+                          
+                          
+                            };
+                      </script>
+          
+            <div class="container table-container">
+                <h2>Modern Responsive Table</h2>
+                <input type="text" id="searchInput" class="form-control mb-3" placeholder="🔍 Search...">
+                
+                <table class="table table-striped table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Time</th>
+                            <th onclick="sortTable(1)">Consumption</th>
+                            <th onclick="sortTable(2)">Electricity Generation</th>
+                            <th onclick="sortTable(3)">Battery Input (Charge)</th>
+                            <th onclick="sortTable(4)">Sold Energy (kWh)</th>
+                            <th onclick="sortTable(5)">Sold Energy Cost</th>
+                            <th onclick="sortTable(5)">Import (Kwh)</th>
+                            <th onclick="sortTable(5)">Import Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {% for i in table_info %}
+                        <tr>
+                            <td>{{ i.time }}</td>
+                            <td>{{ i.home_consumption|floatformat:2 }}</td>
+                            <td>{{ i.electricity }}</td>
+                            <td>{{ i.battery_size|floatformat:2 }}</td>
+                            <td>{{ i.sold_kw|floatformat:3 }}</td>
+                            <td>{{ i.export_revenue|floatformat:1 }}</td>
+                            <td>{{ i.import_kwh|floatformat:2 }}</td>
+                            <th onclick="sortTable(5)">{{i.import_price|floatformat:2}}</th>
+                        </tr>
+                        {% endfor %}
+                
+                        <!-- Overall row -->
+                        <tr>
+                            <td><strong>Overall:</strong></td>
+                            
+                            <td>
+                                <strong>
+                                    {% if consumption_option == "Daily" %}
+                                        {{ home_consumption_value|floatformat:2 }} 
+                                    {% elif consumption_option == "Yearly" %}
+                                        {{ home_consumption|floatformat:2 }}<br>
+                                      
+                                    {% else %}
+                                        No data available
+                                    {% endif %}
+                                </strong>
+                            </td>
+                            <td><strong>{{ daily_pv_generation_data_sum|floatformat:2 }}</strong></td>
+                            <td><strong></strong></td>
+                           <td><strong>{{ final_total_sold_energy|floatformat:3 }}</strong></td>
+                            <td><strong>{{ final_total_sold_energy_price|floatformat:3 }}</strong></td>
+                            <td><strong>{{ total_import_kwh_per_day|floatformat:2 }}</strong></td>
+                            <td><strong>{{ total_import_price_per_day|floatformat:2 }}</strong></td>
+                            
+                        </tr>
+             
+                    </tbody>
+                </table>
+                
+                
+            </div>
+
+          
+             <!--Monthly Consuption Values -->
+
+           
+
+            <div class="table-responsive" style="overflow-x: auto;">
+               
+            </div>
+            
+        </div>
+                         <!--Import Table-->
+        <div class="table-responsive mt-4">
+            <h5 class="text-center"><i class="fas fa-chart-line"></i>Monthly Consumption </h5>
+            <table class="table table-striped table-hover text-center">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Days</th>
+                        <th>Consuption</th>
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in yearly_acl_consumptions_per_month %}
+    <tr>
+        <td>{{ m.month }}</td>
+        <td>{{ m.days }}</td>
+        <td>{{ m.monthly_consumption|floatformat:1|intcomma }} (KWH)</td>
+    </tr>
+    {% endfor %}
+    <!-- Overall Row -->
+    <tr>
+        <td><strong>Total:</strong></td>
+        <td></td>
+        <td>
+            <strong>
+               
+            </strong>
+        </td>
+    </tr>
+                </tbody>
+            </table>
+        </div>
+
+            <!--Monthly Consuption Table  Table-->
+            <div class="table-responsive mt-4">
+                <h5 class="text-center"><i class="fas fa-chart-line"></i>    Monthly Import  Table </h5>
+                <table class="table table-striped table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Days</th>
+                            <th>Import (kwh)</th>
+                            <th>Import Price</th>
+                        
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tbody>
+    {% for m in monthly_imports %}
+    <tr>
+        <td>{{ m.month }}</td>
+        <td>{{ m.days }}</td>
+        <td>{{ m.import_kwh|floatformat:3|intcomma }} (KWH)</td>
+        <td>{{ m.import_price|floatformat:0|intcomma }} UZS</td>
+    </tr>
+    {% endfor %}
+    <!-- Overall Row -->
+    <tr>
+        <td><strong>Total:</strong></td>
+        <td></td>
+        <td>
+            <strong>
+                {{ sum_monthly_imports_total_kwh|floatformat:2|intcomma }} (KWH)
+                
+            </strong>
+        </td>
+
+        <td>
+            <strong>
+                {{ sum_monthly_imports_total_price|floatformat:0|intcomma }}  UZS
+            </strong>
+        </td>
+    </tr>
+</tbody>
+                      
+                        <!-- Overall Row -->
+                      
+                </table>
+            </div>
+
+
+
+                 <!--Export Table-->
+        <div class="table-responsive mt-4">
+            <h5 class="text-center"><i class="fas fa-chart-line"></i>Monthly Export Price </h5>
+            <table class="table table-striped table-hover text-center">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Days</th>
+                        <th>Export (kWh)</th>
+                        <th>Export Price (UZS)</th>
+                    </tr>
+                </thead>
+                <tbody>
+    {% for month_data in monthly_imports %}
+    <tr>
+        <td>{{ month_data.month }}</td>
+        <td>{{ month_data.days }}</td>
+        <td>{{ month_data.monthly_export_kwh|floatformat:1|intcomma }} (KWH)</td>
+        <td>{{ month_data.monthly_export_price|floatformat:0|intcomma }} UZS</td>
+    </tr>
+    {% endfor %}
+    <!-- Overall Row -->
+    <tr>
+        <td><strong>Total:</strong></td>
+        <td></td>
+        <td><strong>{{ sum_monthly_export_kwh|floatformat:1|intcomma }} (KWH)</strong></td>
+        <td><strong> {{sum_monthly_total_export_price}} UZS</strong></td>
+    </tr>
+</tbody>
+            </table>
+        </div>
+
+        <div class="chart-container mt-4">
+    <h5 class="text-center"><i class="fas fa-chart-bar"></i> Monthly Import and Export Prices</h5>
+    <canvas id="barChartCombined" style="width:100%; height:400px;"></canvas>
+</div>
+
+<script>
+    // Combined Bar Chart Script
+    const ctxBarCombined = document.getElementById('barChartCombined').getContext('2d');
+
+    // Build labels array using the month names from import_price_breakdown
+    const labelsBarCombined = [
+        {% for month_data in monthly_imports %}
+            "{{ month_data.month }}"{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+
+    // Build data array using the monthly import price values
+    const importPrices = [
+        {% for month_data in monthly_imports %}
+            {{ month_data.import_price|floatformat:0 }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+
+    // Build data array using the monthly export price values
+    const exportPrices = [
+        {% for month_data in monthly_imports %}
+            {{ month_data.monthly_export_price|floatformat:0 }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+
+    const dataBarCombined = {
+        labels: labelsBarCombined,
+        datasets: [
+            {
+                label: 'Monthly Import Price (UZS)',
+                data: importPrices,
+                backgroundColor: 'rgba(255, 99, 132, 0.7)', // Red for import prices
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 3
+            },
+            {
+                label: 'Monthly Export Price (UZS)',
+                data: exportPrices,
+                backgroundColor: 'rgba(0, 200, 83, 0.7)', // Green for export prices
+                borderColor: 'rgba(0, 200, 83, 1)',
+                borderWidth: 3
+            }
+        ]
+    };
+
+    const configBarCombined = {
+        type: 'bar',
+        data: dataBarCombined,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Price (UZS)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Months'
+                    }
+                }
+            }
+        }
+    };
+
+    new Chart(ctxBarCombined, configBarCombined);
+</script>
+
+        
+    </div>
+
+
+   
+    
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
