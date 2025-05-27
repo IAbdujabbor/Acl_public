@@ -64,13 +64,12 @@ def process_input(request):
     total_import_kwh = Decimal('0.0')  # Initialize total import kWh
     total_import_price = Decimal('0.0')  # Initialize total import price
     cumulative_battery_size = 0.0
-    consumption_option = "Daily"  # Default to Daily
+    consumption_option = "Yearly"  # Default to Daily
     monthly_consumptions_per_month = []
     yearly_acl_consumptions_per_month = []
     monthly_consumptions = []  # Initialize monthly consumptions
 
-      # Initialize monthly consumptions per month
-    # Initialize input variables
+      # Initialize input variables
     home_consumption_value = ""
     solar_array_size_value = ""
     month_value = ""
@@ -361,7 +360,7 @@ def process_input(request):
     sum_monthly_total_export_price = sum(m["monthly_export_price"] for m in monthly_imports)
 
     # Pass data to the template
-    return render(request, "index.html", {
+    response = render(request, "index.html", {
         "table_info": table_info,
         "home_consumption": daily_consumption,
         "month_value": month_value,
@@ -398,6 +397,12 @@ def process_input(request):
         "sum_monthly_export_kwh": sum_monthly_export_kwh,
         "sum_monthly_total_export_price": sum_monthly_total_export_price,
     })
+
+    # In your Django view
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return response  # just return the HttpResponse
+
+    return response
 
 
 def analyze_energy(request):

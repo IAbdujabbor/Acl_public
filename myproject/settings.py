@@ -24,8 +24,8 @@ SECRET_KEY = 'django-insecure-ac+8m93dq_1v5ok&r1h!6t1v6rg&+ch79j=mnkkow0k+1rhf)^
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS =[]
+#ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -42,6 +42,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -49,7 +51,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+
 ]
+
+X_FRAME_OPTIONS = 'ALLOWALL'  # Let us control via CSP or headers
+
+# Optional: Add Content Security Policy header (recommended)
+CSP_FRAME_ANCESTORS = "'self' https://solwindenergy.com https://jafaenergy.com "
+
+MIDDLEWARE.insert(0, 'acl.middleware.AllowOnlyMySitesMiddleware')
+MIDDLEWARE.insert(1, 'acl.middleware.CSPMiddleware')
+
 
 ROOT_URLCONF = 'myproject.urls'
 

@@ -174,7 +174,7 @@
         <h3 class="text-center">Input Parameters</h3>
         
         <!-- Home Consuption -->
-      <form method="POST">
+      <form method="POST"   id="calcForm">
     {% csrf_token %}
     {% load custom_filters %}
 
@@ -182,8 +182,10 @@
 <div class="form-group">
     <label><i class="fas fa-charging-station"></i> Home Consumption Option</label>
     <select class="form-control" id="consumption_option" name="consumption_option" required>
-        <option value="Daily" {% if consumption_option == "Daily" %}selected{% endif %}>Daily</option>
-        <option value="Yearly" {% if consumption_option == "Yearly" %}selected{% endif %}>Yearly</option>
+        
+      <option value="Yearly" {% if consumption_option == "Yearly" %}selected{% endif %}>Yearly</option>
+      <option value="Daily" {% if consumption_option == "Daily" %}selected{% endif %}>Daily</option>
+    
     </select>
 </div>
 
@@ -279,7 +281,7 @@
     <div class="content">
         <div class="container mt-4 text-center">
             <h1 class="mb-4">ACL</h1>
-            <small >powered by res-hub</small>
+           
             
         </div>
 
@@ -331,7 +333,7 @@
                         <h5 class="card-title"><i class="fas fa-chart-line"></i> Energy genearation per day</h5>
 
                         {% if daily_pv_generation_data_sum %}
-                        <p class="card-text fw-bold">{{daily_pv_generation_data_sum|floatformat:2  }}kw</p>
+                                <p class="card-text fw-bold">{{daily_pv_generation_data_sum|floatformat:2  }}kw</p>
                         {% endif %}
                     </div>
                 </div>
@@ -424,7 +426,7 @@
                     <h5 class="card-title"><i class="fas fa-chart-line"></i> Export  Price  (Year)</h5>
 
                     
-                    <p class="card-text fw-bold">{{  yearly_export_price|floatformat:0|intcomma  }} UZS </p>
+                    <p class="card-text fw-bold>{{  yearly_export_price|floatformat:0|intcomma  }} UZS </p>
                     
                 </div>
             </div>
@@ -435,7 +437,7 @@
                     <h5 class="card-title"><i class="fas fa-chart-line"></i> Export  Kwh  (Year)</h5>
 
                     
-                    <p class="card-text fw-bold">{{  year_total_export_kwh|floatformat:2 }} kwh </p>
+                    <p class="card-text fw-bold>{{  year_total_export_kwh|floatformat:2 }} kwh </p>
                     
                 </div>
             </div>
@@ -446,20 +448,20 @@
         
         <div class="chart-container mt-4">
 
-                      <!-- Floating Bar Chart -->
-                      <canvas id="floatingBarChart" style="width:100%; height: 100px;"></canvas>
+            <!-- Floating Bar Chart -->
+            <canvas id="floatingBarChart" style="width:100%; height: 100px;"></canvas>
             
-                      <!-- Line Chart -->
-                      <canvas id="lineChart" style="width:100%; height: 500px;"></canvas>
-                      
-                      <!-- Area Chart -->
-                      <canvas id="areaChart" style="width:100%; height: 500px;"></canvas>
-                      
+            <!-- Line Chart -->
+            <canvas id="lineChart" style="width:100%; height: 500px;"></canvas>
+            
+            <!-- Area Chart -->
+            <canvas id="areaChart" style="width:100%; height: 500px;"></canvas>
 
-                      
+            <!-- Monthly Export/Import Bar Chart -->
+            <canvas id="monthlyBarChart" style="width:100%; height:350px;"></canvas>
 
-                      <script>
-                          window.onload = function() {
+            <script>
+                window.onload = function() {
 
 
 
@@ -569,8 +571,45 @@ const configArea = {
 };
 
 new Chart(ctxArea, configArea);
-                  
-                              new Chart(ctxArea, configArea);
+
+                    // Monthly Export/Import Bar Chart
+                    const ctxMonthlyBar = document.getElementById('monthlyBarChart').getContext('2d');
+                    const monthlyLabels = [{% for m in monthly_imports %}"{{ m.month }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+                    const monthlyExportPrices = [{% for m in monthly_imports %}{{ m.monthly_export_price|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+                    const monthlyImportPrices = [{% for m in monthly_imports %}{{ m.import_price|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+                    const dataMonthlyBar = {
+                        labels: monthlyLabels,
+                        datasets: [
+                            {
+                                label: 'Export Price (UZS)',
+                                data: monthlyExportPrices,
+                                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                            },
+                            {
+                                label: 'Import Price (UZS)',
+                                data: monthlyImportPrices,
+                                backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                            }
+                        ]
+                    };
+
+                    const configMonthlyBar = {
+                        type: 'bar',
+                        data: dataMonthlyBar,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top' },
+                                title: { display: true, text: 'Monthly Export & Import Prices' }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    };
+
+                    new Chart(ctxMonthlyBar, configMonthlyBar);
                           
                           
                           
@@ -766,85 +805,42 @@ new Chart(ctxArea, configArea);
             </table>
         </div>
 
-        <div class="chart-container mt-4">
-    <h5 class="text-center"><i class="fas fa-chart-bar"></i> Monthly Import and Export Prices</h5>
-    <canvas id="barChartCombined" style="width:100%; height:400px;"></canvas>
-</div>
+        <script>
+            
+        </script>
 
-<script>
-    // Combined Bar Chart Script
-    const ctxBarCombined = document.getElementById('barChartCombined').getContext('2d');
 
-    // Build labels array using the month names from import_price_breakdown
-    const labelsBarCombined = [
-        {% for month_data in monthly_imports %}
-            "{{ month_data.month }}"{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    ];
 
-    // Build data array using the monthly import price values
-    const importPrices = [
-        {% for month_data in monthly_imports %}
-            {{ month_data.import_price|floatformat:0 }}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    ];
-
-    // Build data array using the monthly export price values
-    const exportPrices = [
-        {% for month_data in monthly_imports %}
-            {{ month_data.monthly_export_price|floatformat:0 }}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    ];
-
-    const dataBarCombined = {
-        labels: labelsBarCombined,
-        datasets: [
-            {
-                label: 'Monthly Import Price (UZS)',
-                data: importPrices,
-                backgroundColor: 'rgba(255, 99, 132, 0.7)', // Red for import prices
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 3
-            },
-            {
-                label: 'Monthly Export Price (UZS)',
-                data: exportPrices,
-                backgroundColor: 'rgba(0, 200, 83, 0.7)', // Green for export prices
-                borderColor: 'rgba(0, 200, 83, 1)',
-                borderWidth: 3
-            }
-        ]
-    };
-
-    const configBarCombined = {
-        type: 'bar',
-        data: dataBarCombined,
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Price (UZS)'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Months'
-                    }
-                }
-            }
-        }
-    };
-
-    new Chart(ctxBarCombined, configBarCombined);
-</script>
+<!-- remover refresh browser  -->
 
         
     </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('calcForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Stop the form from submitting normally
+
+        const formData = new FormData(form);
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Replace the whole page content (or just a part of it)
+            document.open();
+            document.write(html);
+            document.close();
+        });
+    });
+});
+</script>
 
    
     
