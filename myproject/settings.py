@@ -24,7 +24,14 @@ SECRET_KEY = 'django-insecure-ac+8m93dq_1v5ok&r1h!6t1v6rg&+ch79j=mnkkow0k+1rhf)^
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS =[]
+ALLOWED_HOSTS = [
+    'mirzajonov.pythonanywhere.com',
+    'www.mirzajonov.pythonanywhere.com',  # optional if you use www
+    'solwindenergy.com',                   # frontend domains if needed
+    'jafaenergy.com',
+    'localhost',                          # optional for local testing
+    '127.0.0.1',
+]
 #ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
