@@ -36,6 +36,17 @@ ALLOWED_HOSTS = [
 
 
 # Application definition
+CSRF_TRUSTED_ORIGINS = [
+    "https://solwindenergy.com",
+    "https://jafaenergy.com",
+]
+
+# Required for CSRF cookie to be readable by the frontend
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+
+
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
